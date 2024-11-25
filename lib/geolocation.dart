@@ -36,7 +36,10 @@ class _LocationScreenState extends State<LocationScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator(); // Show loading spinner while waiting
             } else if (snapshot.connectionState == ConnectionState.done) {
-              // If the future is completed, display the location
+              // Handle completed state
+              if (snapshot.hasError) {
+                return const Text('Something terrible happened!'); // Show error message if there's an error
+              }
               if (snapshot.hasData) {
                 Position? myPos = snapshot.data;
                 return Text(
@@ -47,12 +50,13 @@ class _LocationScreenState extends State<LocationScreen> {
                 return const Text('No location data available');
               }
             } else {
-              return const Text('Something went wrong'); // Handle any other states
+              return const Text('Something went wrong'); // Handle other states
             }
           },
         ),
       ),
     );
   }
+
 
 }
