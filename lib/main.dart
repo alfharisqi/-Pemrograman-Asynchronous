@@ -85,6 +85,19 @@ class _FuturePageState extends State<FuturePage> {
     return 3;
   }
 
+  // Langkah 4: Menambahkan metode handleError untuk menangani error
+  Future handleError() async {
+    try {
+      await returnError(); // Menjalankan returnError yang akan melempar exception
+    } catch (error) {
+      setState(() {
+        result = error.toString(); // Menampilkan error jika terjadi kesalahan
+      });
+    } finally {
+      print('Complete'); // Menampilkan 'Complete' setelah proses selesai
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,18 +118,8 @@ class _FuturePageState extends State<FuturePage> {
             ElevatedButton(
               child: const Text('Trigger Error'),
               onPressed: () {
-                // Menggunakan then, catchError, dan whenComplete untuk menangani returnError
-                returnError().then((value) {
-                  setState(() {
-                    result = 'Success'; // Menampilkan pesan "Success" jika tidak ada error
-                  });
-                }).catchError((onError) {
-                  setState(() {
-                    result = onError.toString(); // Menampilkan pesan error jika terjadi error
-                  });
-                }).whenComplete(() {
-                  print('Complete'); // Menampilkan "Complete" setelah selesai
-                });
+                // Menjalankan handleError untuk menangani error dengan try-catch
+                handleError();
               },
             ),
             const SizedBox(height: 20),
