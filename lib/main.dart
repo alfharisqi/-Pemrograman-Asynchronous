@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:async/async.dart'; // Impor package async.
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Future Demo',
+      title: 'Completer Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -31,62 +31,28 @@ class FuturePage extends StatefulWidget {
 
 class _FuturePageState extends State<FuturePage> {
   String result = "";
-  // String futureResults = ""; // Tidak digunakan pada pembaruan ini.
 
-  // Future<http.Response> getData() async {
-  //   const authority = 'www.googleapis.com';
-  //   const path = '/books/v1/volumes/R4qsDwAAQBAJ';
-  //   Uri url = Uri.https(authority, path);
-  //   return http.get(url);
-  // }
+  // Variabel Completer
+  late Completer<int> completer;
 
-  Future<int> returnOneAsync() async {
-    await Future.delayed(const Duration(seconds: 3));
-    return 1;
+  // Fungsi untuk mendapatkan angka dengan menggunakan Completer
+  Future<int> getNumber() {
+    completer = Completer<int>();
+    calculate();
+    return completer.future;
   }
 
-  Future<int> returnTwoAsync() async {
-    await Future.delayed(const Duration(seconds: 3));
-    return 2;
-  }
-
-  Future<int> returnThreeAsync() async {
-    await Future.delayed(const Duration(seconds: 3));
-    return 3;
-  }
-
-  // Future<void> fetchAllFutures() async {
-  //   try {
-  //     final results = await Future.wait([
-  //       returnOneAsync(),
-  //       returnTwoAsync(),
-  //       returnThreeAsync(),
-  //     ]);
-  //     setState(() {
-  //       futureResults = "Results: ${results.join(', ')}";
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       futureResults = "An error occurred while fetching results";
-  //     });
-  //   }
-  // }
-
-  Future<void> count() async {
-    int total = 0;
-    total = await returnOneAsync();
-    total += await returnTwoAsync();
-    total += await returnThreeAsync();
-    setState(() {
-      result = "Sum: $total";
-    });
+  // Fungsi untuk melakukan perhitungan setelah delay
+  Future<void> calculate() async {
+    await Future.delayed(const Duration(seconds: 5));
+    completer.complete(42);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Back from the Future'),
+        title: const Text('Completer Demo'),
       ),
       body: Center(
         child: Column(
@@ -95,15 +61,33 @@ class _FuturePageState extends State<FuturePage> {
             ElevatedButton(
               child: const Text('GO!'),
               onPressed: () {
-                count(); // Langsung memanggil metode count.
+                // Kode yang diminta untuk mengganti onPressed()
+                getNumber().then((value) {
+                  setState(() {
+                    result = value.toString(); // Menampilkan hasil
+                  });
+                }).catchError((e) {
+                  setState(() {
+                    result = "Error: $e"; // Menangani kesalahan
+                  });
+                });
+
+                // Kode sebelumnya yang sekarang dikomentari:
+                // getNumber().then((value) {
+                //   setState(() {
+                //     result = "Result: $value";
+                //   });
+                // }).catchError((e) {
+                //   setState(() {
+                //     result = "Error: $e";
+                //   });
+                // });
               },
             ),
             const SizedBox(height: 20),
             result.isNotEmpty
                 ? Text(result)
-                : const Text("Press GO! to calculate sum."),
-            // const SizedBox(height: 20),
-            // const CircularProgressIndicator(), // Dikomentari karena tidak digunakan.
+                : const Text("Press GO! to calculate."),
           ],
         ),
       ),
