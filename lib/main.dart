@@ -53,6 +53,47 @@ class _FuturePageState extends State<FuturePage> {
     }
   }
 
+  // Langkah 5: Menambahkan metode returnFG
+  void returnFG() {
+    // Membuat FutureGroup untuk mengelola beberapa Future secara paralel
+    FutureGroup<int> futureGroup = FutureGroup<int>();
+    futureGroup.add(returnOneAsync());
+    futureGroup.add(returnTwoAsync());
+    futureGroup.add(returnThreeAsync());
+    futureGroup.close();
+
+    // Menunggu semua Future selesai
+    futureGroup.future.then((List<int> value) {
+      int total = 0;
+      for (var element in value) {
+        total += element; // Menghitung total dari hasil Future
+      }
+      setState(() {
+        result = total.toString(); // Menampilkan total hasil
+      });
+    }).catchError((e) {
+      setState(() {
+        result = 'An error occurred'; // Menangani kesalahan
+      });
+    });
+  }
+
+  // Asynchronous functions to be used in returnFG
+  Future<int> returnOneAsync() async {
+    await Future.delayed(const Duration(seconds: 3));
+    return 1;
+  }
+
+  Future<int> returnTwoAsync() async {
+    await Future.delayed(const Duration(seconds: 3));
+    return 2;
+  }
+
+  Future<int> returnThreeAsync() async {
+    await Future.delayed(const Duration(seconds: 3));
+    return 3;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,21 +107,13 @@ class _FuturePageState extends State<FuturePage> {
             ElevatedButton(
               child: const Text('GO!'),
               onPressed: () {
-                // Langkah 6: Pindah ke onPressed() dan perbarui dengan kode berikut
-                getNumber().then((value) {
-                  setState(() {
-                    result = value.toString(); // Menampilkan hasil
-                  });
-                }).catchError((e) {
-                  setState(() {
-                    result = 'An error occurred'; // Menangani kesalahan
-                  });
-                });
+                // Langkah 2: Mengganti kode di onPressed dengan memanggil returnFG()
+                returnFG();
               },
             ),
             const SizedBox(height: 20),
             result.isNotEmpty
-                ? Text(result)
+                ? Text(result) // Menampilkan hasil
                 : const Text("Press GO! to calculate."),
           ],
         ),
