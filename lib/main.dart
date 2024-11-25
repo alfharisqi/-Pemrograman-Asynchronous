@@ -1,70 +1,115 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 
-class LocationScreen extends StatefulWidget {
-  const LocationScreen({super.key});
+import 'geolocation.dart';
+import 'navigation_first.dart';
+import 'navigation_second.dart';
 
-  @override
-  State<LocationScreen> createState() => _LocationScreenState();
+void main() {
+  runApp(const MyApp());
 }
 
-class _LocationScreenState extends State<LocationScreen> {
-  String myPosition = ''; // Start with an empty string
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
-  void initState() {
-    super.initState();
-    getPosition(); // Fetch location when the screen is initialized
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Future Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      //home: const FuturePage(),
+      //home: LocationScreen(),
+      //home: const NavigationFirst(),
+      home: const NavigationFirst(),
+    );
+  }
+}
+
+class FuturePage extends StatefulWidget {
+  const FuturePage({super.key});
+
+  @override
+  State<FuturePage> createState() => _FuturePageState();
+}
+
+class _FuturePageState extends State<FuturePage> {
+  String result = "";
+
+  Future<void> returnError() async {
+    await Future.delayed(const Duration(seconds: 2));
+    throw Exception('Something terrible happened!');
   }
 
-  Future<void> getPosition() async {
-    // Check if location services are enabled
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      setState(() {
-        myPosition = 'Location services are disabled. Please enable them in your settings.';
-      });
-      return;
-    }
-
-    // Request location permission
-    LocationPermission permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-      setState(() {
-        myPosition = 'Location permissions are denied. Please grant permission.';
-      });
-      return;
-    } else if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        myPosition = 'Location permissions are permanently denied. Please enable them in your settings.';
-      });
-      return;
-    }
-
-    // If permission is granted, get the current position
+  Future<void> handleError() async {
     try {
-      Position position = await Geolocator.getCurrentPosition();
+      await returnError();
+    } catch (error) {
       setState(() {
-        myPosition =
-        'Latitude: ${position.latitude.toString()} - Longitude: ${position.longitude.toString()}';
+        result = error.toString();
       });
-    } catch (e) {
-      setState(() {
-        myPosition = 'Failed to get location: $e';
-      });
+    } finally {
+      print('Complete');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show loading indicator if myPosition is empty, else show the location
-    final myWidget = myPosition.isEmpty
-        ? const CircularProgressIndicator() // Show loading while fetching
-        : Text(myPosition); // Show location once it's fetched
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Current Location')),
-      body: Center(child: myWidget), // Display the widget
+      appBar: AppBar(
+        title: const Text('Future Demo'),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                child: const Text('Handle Error with then'),
+                onPressed: () {
+                  returnError()
+                      .then((value) {
+                    setState(() {
+                      result = 'Success';
+                    });
+                  })
+                      .catchError((onError) {
+                    setState(() {
+                      result = onError.toString();
+                    });
+                  })
+                      .whenComplete(() => print('Complete'));
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                child: const Text('Handle Error with try-catch'),
+                onPressed: () {
+                  handleError();
+                },
+              ),
+              const SizedBox(height: 20),
+              Text(
+                result,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              const CircularProgressIndicator(),
+            ],
+          ),
+        ),
+      ),
     );
+  }
+
+  Future<http.Response> getData() async {
+    const authority = 'www.googleapis.com';
+    const path = '/books/v1/volumes/junbDwAAQBAJ';
+    Uri url = Uri.https(authority, path);
+    return http.get(url);
   }
 }
