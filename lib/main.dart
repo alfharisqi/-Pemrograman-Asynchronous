@@ -38,14 +38,19 @@ class _FuturePageState extends State<FuturePage> {
   // Fungsi untuk mendapatkan angka dengan menggunakan Completer
   Future<int> getNumber() {
     completer = Completer<int>();
-    calculate();
+    calculate2(); // Memanggil metode baru calculate2
     return completer.future;
   }
 
-  // Fungsi untuk melakukan perhitungan setelah delay
-  Future<void> calculate() async {
-    await Future.delayed(const Duration(seconds: 5));
-    completer.complete(42);
+  // Mengganti metode calculate() dengan calculate2()
+  Future<void> calculate2() async {
+    try {
+      await Future.delayed(const Duration(seconds: 5)); // Delay 5 detik
+      completer.complete(42); // Menyelesaikan dengan nilai 42
+      throw Exception(); // Menyebabkan kesalahan untuk menguji error handling
+    } catch (_) {
+      completer.completeError("An error occurred during calculation"); // Menangani kesalahan
+    }
   }
 
   @override
@@ -61,27 +66,16 @@ class _FuturePageState extends State<FuturePage> {
             ElevatedButton(
               child: const Text('GO!'),
               onPressed: () {
-                // Kode yang diminta untuk mengganti onPressed()
+                // Langkah 6: Pindah ke onPressed() dan perbarui dengan kode berikut
                 getNumber().then((value) {
                   setState(() {
                     result = value.toString(); // Menampilkan hasil
                   });
                 }).catchError((e) {
                   setState(() {
-                    result = "Error: $e"; // Menangani kesalahan
+                    result = 'An error occurred'; // Menangani kesalahan
                   });
                 });
-
-                // Kode sebelumnya yang sekarang dikomentari:
-                // getNumber().then((value) {
-                //   setState(() {
-                //     result = "Result: $value";
-                //   });
-                // }).catchError((e) {
-                //   setState(() {
-                //     result = "Error: $e";
-                //   });
-                // });
               },
             ),
             const SizedBox(height: 20),
