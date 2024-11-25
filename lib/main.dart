@@ -32,6 +32,12 @@ class FuturePage extends StatefulWidget {
 class _FuturePageState extends State<FuturePage> {
   String result = "";
 
+  // Metode baru yang akan melemparkan exception setelah delay 2 detik
+  Future<void> returnError() async {
+    await Future.delayed(const Duration(seconds: 2)); // Simulasi delay
+    throw Exception('Something terrible happened!'); // Melemparkan exception
+  }
+
   // Fungsi untuk mendapatkan angka dengan menggunakan Completer
   Future<int> getNumber() async {
     await Future.delayed(const Duration(seconds: 5)); // Simulasi delay
@@ -96,6 +102,23 @@ class _FuturePageState extends State<FuturePage> {
                 returnFG();
               },
             ),
+            ElevatedButton(
+              child: const Text('Trigger Error'),
+              onPressed: () {
+                // Menggunakan then, catchError, dan whenComplete untuk menangani returnError
+                returnError().then((value) {
+                  setState(() {
+                    result = 'Success'; // Menampilkan pesan "Success" jika tidak ada error
+                  });
+                }).catchError((onError) {
+                  setState(() {
+                    result = onError.toString(); // Menampilkan pesan error jika terjadi error
+                  });
+                }).whenComplete(() {
+                  print('Complete'); // Menampilkan "Complete" setelah selesai
+                });
+              },
+            ),
             const SizedBox(height: 20),
             result.isNotEmpty
                 ? Text(result) // Menampilkan hasil
@@ -106,4 +129,3 @@ class _FuturePageState extends State<FuturePage> {
     );
   }
 }
-
