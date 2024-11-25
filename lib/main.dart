@@ -31,12 +31,55 @@ class FuturePage extends StatefulWidget {
 
 class _FuturePageState extends State<FuturePage> {
   String result = "";
+  // String futureResults = ""; // Tidak digunakan pada pembaruan ini.
 
-  Future<http.Response> getData() async {
-    const authority = 'www.googleapis.com';
-    const path = '/books/v1/volumes/R4qsDwAAQBAJ';
-    Uri url = Uri.https(authority, path);
-    return http.get(url);
+  // Future<http.Response> getData() async {
+  //   const authority = 'www.googleapis.com';
+  //   const path = '/books/v1/volumes/R4qsDwAAQBAJ';
+  //   Uri url = Uri.https(authority, path);
+  //   return http.get(url);
+  // }
+
+  Future<int> returnOneAsync() async {
+    await Future.delayed(const Duration(seconds: 3));
+    return 1;
+  }
+
+  Future<int> returnTwoAsync() async {
+    await Future.delayed(const Duration(seconds: 3));
+    return 2;
+  }
+
+  Future<int> returnThreeAsync() async {
+    await Future.delayed(const Duration(seconds: 3));
+    return 3;
+  }
+
+  // Future<void> fetchAllFutures() async {
+  //   try {
+  //     final results = await Future.wait([
+  //       returnOneAsync(),
+  //       returnTwoAsync(),
+  //       returnThreeAsync(),
+  //     ]);
+  //     setState(() {
+  //       futureResults = "Results: ${results.join(', ')}";
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       futureResults = "An error occurred while fetching results";
+  //     });
+  //   }
+  // }
+
+  Future<void> count() async {
+    int total = 0;
+    total = await returnOneAsync();
+    total += await returnTwoAsync();
+    total += await returnThreeAsync();
+    setState(() {
+      result = "Sum: $total";
+    });
   }
 
   @override
@@ -52,31 +95,18 @@ class _FuturePageState extends State<FuturePage> {
             ElevatedButton(
               child: const Text('GO!'),
               onPressed: () {
-                setState(() {}); // Memulai animasi loading jika diperlukan.
-                getData()
-                    .then((value) {
-                  setState(() {
-                    // Menampilkan 450 karakter pertama dari respons.
-                    result = value.body.toString().substring(0, 450);
-                  });
-                })
-                    .catchError((_) {
-                  setState(() {
-                    result = 'An error occurred'; // Menangani kesalahan.
-                  });
-                });
+                count(); // Langsung memanggil metode count.
               },
             ),
             const SizedBox(height: 20),
             result.isNotEmpty
                 ? Text(result)
-                : const Text("No data yet. Press GO! to fetch."),
-            const SizedBox(height: 20),
-            const CircularProgressIndicator(), // Indikator loading.
+                : const Text("Press GO! to calculate sum."),
+            // const SizedBox(height: 20),
+            // const CircularProgressIndicator(), // Dikomentari karena tidak digunakan.
           ],
         ),
       ),
     );
   }
 }
-
