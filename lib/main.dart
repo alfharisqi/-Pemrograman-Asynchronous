@@ -32,41 +32,26 @@ class FuturePage extends StatefulWidget {
 class _FuturePageState extends State<FuturePage> {
   String result = "";
 
-  // Variabel Completer
-  late Completer<int> completer;
-
   // Fungsi untuk mendapatkan angka dengan menggunakan Completer
-  Future<int> getNumber() {
-    completer = Completer<int>();
-    calculate2(); // Memanggil metode baru calculate2
-    return completer.future;
+  Future<int> getNumber() async {
+    await Future.delayed(const Duration(seconds: 5)); // Simulasi delay
+    return 42; // Nilai yang diselesaikan
   }
 
-  // Mengganti metode calculate() dengan calculate2()
-  Future<void> calculate2() async {
-    try {
-      await Future.delayed(const Duration(seconds: 5)); // Delay 5 detik
-      completer.complete(42); // Menyelesaikan dengan nilai 42
-      throw Exception(); // Menyebabkan kesalahan untuk menguji error handling
-    } catch (_) {
-      completer.completeError("An error occurred during calculation"); // Menangani kesalahan
-    }
-  }
-
-  // Langkah 5: Menambahkan metode returnFG
+  // Langkah 5: Menambahkan metode returnFG dengan Future.wait
   void returnFG() {
-    // Membuat FutureGroup untuk mengelola beberapa Future secara paralel
-    FutureGroup<int> futureGroup = FutureGroup<int>();
-    futureGroup.add(returnOneAsync());
-    futureGroup.add(returnTwoAsync());
-    futureGroup.add(returnThreeAsync());
-    futureGroup.close();
+    // Menggunakan Future.wait untuk menunggu beberapa Future secara paralel
+    final futures = Future.wait<int>([
+      returnOneAsync(),
+      returnTwoAsync(),
+      returnThreeAsync(),
+    ]);
 
     // Menunggu semua Future selesai
-    futureGroup.future.then((List<int> value) {
+    futures.then((List<int> values) {
       int total = 0;
-      for (var element in value) {
-        total += element; // Menghitung total dari hasil Future
+      for (var value in values) {
+        total += value; // Menghitung total dari hasil Future
       }
       setState(() {
         result = total.toString(); // Menampilkan total hasil
@@ -107,7 +92,7 @@ class _FuturePageState extends State<FuturePage> {
             ElevatedButton(
               child: const Text('GO!'),
               onPressed: () {
-                // Langkah 2: Mengganti kode di onPressed dengan memanggil returnFG()
+                // Mengganti kode di onPressed dengan memanggil returnFG()
                 returnFG();
               },
             ),
@@ -121,3 +106,4 @@ class _FuturePageState extends State<FuturePage> {
     );
   }
 }
+
