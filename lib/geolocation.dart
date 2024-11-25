@@ -9,43 +9,50 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
-  String myPosition = '';
+  Future<Position>? position; // Declare the variable to hold the Position
+
+  // Modified getPosition method to simulate a delay
+  Future<Position> getPosition() async {
+    await Geolocator.isLocationServiceEnabled(); // Check if location services are enabled
+    await Future.delayed(const Duration(seconds: 3)); // Simulate a 3-second delay
+    Position position = await Geolocator.getCurrentPosition(); // Get the current position
+    return position;
+  }
 
   @override
   void initState() {
     super.initState();
-    getPosition().then((Position myPos) {
-      setState(() {
-        myPosition =
-        'Latitude: ${myPos.latitude.toString()} - Longitude: ${myPos.longitude.toString()}';
-      });
-    });
-  }
-
-  Future<Position> getPosition() async {
-    // Check if location services are enabled
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // If location services are not enabled, request to enable them
-      return Future.error('Location services are disabled.');
-    }
-
-    // Request permission to access the location
-    LocationPermission permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error('Location permissions are permanently denied.');
-    }
-
-    // Get the current position
-    Position position = await Geolocator.getCurrentPosition();
-    return position;
+    position = getPosition(); // Set the position to the result of getPosition
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Current Location')),
-      body: Center(child: Text(myPosition)),
+      body: Center(
+        child: FutureBuilder<Position>(
+          future: position, // Use the 'position' variable to get the Future<Position>
+          builder: (BuildContext context, AsyncSnapshot<Position> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator(); // Show loading spinner while waiting
+            } else if (snapshot.connectionState == ConnectionState.done) {
+              // If the future is completed, display the location
+              if (snapshot.hasData) {
+                Position? myPos = snapshot.data;
+                return Text(
+                  'Latitude: ${myPos!.latitude} - Longitude: ${myPos.longitude}',
+                  style: const TextStyle(fontSize: 18),
+                );
+              } else {
+                return const Text('No location data available');
+              }
+            } else {
+              return const Text('Something went wrong'); // Handle any other states
+            }
+          },
+        ),
+      ),
     );
   }
+
 }
